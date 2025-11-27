@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Brain, Smartphone, TrendingUp, Shield } from "lucide-react";
+import { Link } from "react-router-dom";
 import AssessmentForm from "@/components/AssessmentForm";
 import Results from "@/components/Results";
 
@@ -40,6 +41,19 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-muted/30 to-background">
+      {/* Navigation */}
+      <nav className="border-b border-border/50 bg-background/80 backdrop-blur-sm sticky top-0 z-50">
+        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
+          <h1 className="text-xl font-bold text-primary">Nomophobia Assessment</h1>
+          <Link to="/metrics">
+            <Button variant="outline" size="sm">
+              <TrendingUp className="w-4 h-4 mr-2" />
+              Model Metrics
+            </Button>
+          </Link>
+        </div>
+      </nav>
+
       {/* Hero Section */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-hero opacity-5" />
