@@ -1,0 +1,4 @@
+project_id = "zxexbynccsfohevuepjt"
+
+[functions.predict-nomophobia]
+verify_jwt = false
