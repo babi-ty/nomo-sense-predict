@@ -5,20 +5,160 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Logistic regression coefficients derived from the dataset
-// These would typically come from training on the actual data
-// For demonstration, I'm using reasonable values based on nomophobia research
-const coefficients = {
-  intercept: -2.5,
-  hours: 0.8,        // Daily smartphone usage hours
-  frequency: 0.6,    // Checking frequency
-  prioritize: 0.9,   // Prioritizing phone over face-to-face
-  distracted: 1.2,   // Feeling distracted
-  relationships: 1.1 // Impact on relationships
-};
+// Training data extracted from the uploaded Excel file
+const trainingData = [
+  { hours: 3, frequency: 4, prioritize: 5, distracted: 2, relationships: 2, label: 1 }, // Presence
+  { hours: 2, frequency: 2, prioritize: 2, distracted: 1, relationships: 1, label: 1 },
+  { hours: 1, frequency: 4, prioritize: 2, distracted: 0, relationships: 1, label: 1 },
+  { hours: 2, frequency: 4, prioritize: 2, distracted: 1, relationships: 1, label: 1 },
+  { hours: 3, frequency: 3, prioritize: 4, distracted: 1, relationships: 2, label: 1 },
+  { hours: 3, frequency: 2, prioritize: 2, distracted: 0, relationships: 0, label: 0 }, // Absence
+  { hours: 2, frequency: 2, prioritize: 4, distracted: 1, relationships: 2, label: 1 },
+  { hours: 2, frequency: 4, prioritize: 1, distracted: 0, relationships: 0, label: 1 },
+  { hours: 3, frequency: 4, prioritize: 4, distracted: 2, relationships: 1, label: 1 },
+  { hours: 2, frequency: 4, prioritize: 1, distracted: 2, relationships: 0, label: 1 },
+  { hours: 1, frequency: 2, prioritize: 2, distracted: 0, relationships: 0, label: 1 },
+  { hours: 2, frequency: 4, prioritize: 4, distracted: 2, relationships: 0, label: 1 },
+  { hours: 2, frequency: 4, prioritize: 4, distracted: 1, relationships: 2, label: 1 },
+  { hours: 1, frequency: 2, prioritize: 2, distracted: 2, relationships: 0, label: 1 },
+  { hours: 2, frequency: 4, prioritize: 2, distracted: 2, relationships: 0, label: 1 },
+  { hours: 2, frequency: 4, prioritize: 4, distracted: 0, relationships: 0, label: 1 },
+  { hours: 2, frequency: 2, prioritize: 4, distracted: 1, relationships: 2, label: 1 },
+  { hours: 1, frequency: 2, prioritize: 2, distracted: 0, relationships: 1, label: 1 },
+  { hours: 1, frequency: 4, prioritize: 1, distracted: 0, relationships: 2, label: 0 },
+  { hours: 3, frequency: 2, prioritize: 0, distracted: 0, relationships: 0, label: 0 },
+  { hours: 2, frequency: 2, prioritize: 2, distracted: 2, relationships: 1, label: 1 },
+  { hours: 1, frequency: 4, prioritize: 4, distracted: 1, relationships: 1, label: 0 },
+  { hours: 2, frequency: 4, prioritize: 1, distracted: 0, relationships: 1, label: 1 },
+  { hours: 1, frequency: 2, prioritize: 2, distracted: 0, relationships: 0, label: 1 },
+  { hours: 1, frequency: 2, prioritize: 2, distracted: 2, relationships: 2, label: 1 },
+  { hours: 2, frequency: 4, prioritize: 2, distracted: 2, relationships: 2, label: 1 },
+  { hours: 2, frequency: 4, prioritize: 2, distracted: 0, relationships: 2, label: 1 },
+  { hours: 3, frequency: 4, prioritize: 4, distracted: 1, relationships: 0, label: 1 },
+  { hours: 1, frequency: 2, prioritize: 2, distracted: 2, relationships: 0, label: 0 },
+  { hours: 2, frequency: 4, prioritize: 4, distracted: 0, relationships: 0, label: 1 },
+  { hours: 3, frequency: 1, prioritize: 4, distracted: 0, relationships: 1, label: 1 },
+  { hours: 1, frequency: 2, prioritize: 2, distracted: 0, relationships: 0, label: 0 },
+  { hours: 3, frequency: 2, prioritize: 1, distracted: 1, relationships: 0, label: 1 },
+  { hours: 3, frequency: 4, prioritize: 4, distracted: 0, relationships: 0, label: 1 }
+];
+
+// Simple logistic regression implementation
+function trainLogisticRegression(data: typeof trainingData) {
+  const learningRate = 0.1;
+  const iterations = 1000;
+  
+  // Initialize coefficients
+  let coefficients = {
+    intercept: 0,
+    hours: 0,
+    frequency: 0,
+    prioritize: 0,
+    distracted: 0,
+    relationships: 0
+  };
+
+  // Gradient descent
+  for (let iter = 0; iter < iterations; iter++) {
+    let gradients = { intercept: 0, hours: 0, frequency: 0, prioritize: 0, distracted: 0, relationships: 0 };
+    
+    for (const sample of data) {
+      const prediction = sigmoid(
+        coefficients.intercept +
+        coefficients.hours * sample.hours +
+        coefficients.frequency * sample.frequency +
+        coefficients.prioritize * sample.prioritize +
+        coefficients.distracted * sample.distracted +
+        coefficients.relationships * sample.relationships
+      );
+      
+      const error = prediction - sample.label;
+      gradients.intercept += error;
+      gradients.hours += error * sample.hours;
+      gradients.frequency += error * sample.frequency;
+      gradients.prioritize += error * sample.prioritize;
+      gradients.distracted += error * sample.distracted;
+      gradients.relationships += error * sample.relationships;
+    }
+    
+    // Update coefficients
+    coefficients.intercept -= learningRate * gradients.intercept / data.length;
+    coefficients.hours -= learningRate * gradients.hours / data.length;
+    coefficients.frequency -= learningRate * gradients.frequency / data.length;
+    coefficients.prioritize -= learningRate * gradients.prioritize / data.length;
+    coefficients.distracted -= learningRate * gradients.distracted / data.length;
+    coefficients.relationships -= learningRate * gradients.relationships / data.length;
+  }
+
+  return coefficients;
+}
 
 function sigmoid(z: number): number {
   return 1 / (1 + Math.exp(-z));
+}
+
+// Train the model
+const coefficients = trainLogisticRegression(trainingData);
+
+function calculateMetrics() {
+  let truePositive = 0, trueNegative = 0, falsePositive = 0, falseNegative = 0;
+  const predictions: { actual: number; predicted: number; probability: number }[] = [];
+
+  for (const sample of trainingData) {
+    const logit = coefficients.intercept +
+      coefficients.hours * sample.hours +
+      coefficients.frequency * sample.frequency +
+      coefficients.prioritize * sample.prioritize +
+      coefficients.distracted * sample.distracted +
+      coefficients.relationships * sample.relationships;
+    
+    const probability = sigmoid(logit);
+    const predicted = probability >= 0.5 ? 1 : 0;
+    
+    predictions.push({ actual: sample.label, predicted, probability });
+
+    if (sample.label === 1 && predicted === 1) truePositive++;
+    else if (sample.label === 0 && predicted === 0) trueNegative++;
+    else if (sample.label === 0 && predicted === 1) falsePositive++;
+    else if (sample.label === 1 && predicted === 0) falseNegative++;
+  }
+
+  const accuracy = (truePositive + trueNegative) / trainingData.length;
+  const precision = truePositive / (truePositive + falsePositive) || 0;
+  const recall = truePositive / (truePositive + falseNegative) || 0;
+  const f1Score = 2 * (precision * recall) / (precision + recall) || 0;
+
+  // Calculate ROC-AUC
+  predictions.sort((a, b) => b.probability - a.probability);
+  let tpr = 0, fpr = 0;
+  let rocAuc = 0;
+  const positives = trainingData.filter(s => s.label === 1).length;
+  const negatives = trainingData.length - positives;
+  
+  for (const pred of predictions) {
+    if (pred.actual === 1) {
+      tpr += 1 / positives;
+    } else {
+      rocAuc += tpr / negatives;
+      fpr += 1 / negatives;
+    }
+  }
+
+  return {
+    accuracy,
+    precision,
+    recall,
+    f1Score,
+    rocAuc,
+    confusionMatrix: {
+      truePositive,
+      trueNegative,
+      falsePositive,
+      falseNegative
+    },
+    coefficients,
+    sampleSize: trainingData.length
+  };
 }
 
 function predictNomophobia(answers: Record<string, string>) {
@@ -102,7 +242,22 @@ serve(async (req) => {
   }
 
   try {
-    const { answers } = await req.json();
+    const body = await req.json();
+
+    // Check if requesting metrics
+    if (body.getMetrics) {
+      const metrics = calculateMetrics();
+      return new Response(
+        JSON.stringify(metrics),
+        { 
+          status: 200, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
+    }
+
+    // Otherwise, handle prediction request
+    const { answers } = body;
 
     if (!answers || typeof answers !== 'object') {
       return new Response(
