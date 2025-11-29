@@ -18,6 +18,7 @@ const Index = () => {
   const [results, setResults] = useState<AssessmentResult | null>(null);
 
   const handleStartAssessment = () => {
+    console.log("Starting assessment...");
     setShowAssessment(true);
     setResults(null);
   };
@@ -74,6 +75,7 @@ const Index = () => {
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
               <Button 
+                type="button"
                 size="lg" 
                 onClick={handleStartAssessment}
                 className="bg-gradient-hero hover:opacity-90 text-white shadow-medium"
@@ -81,6 +83,7 @@ const Index = () => {
                 Take Assessment
               </Button>
               <Button 
+                type="button"
                 size="lg" 
                 variant="outline"
                 onClick={() => document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' })}
@@ -170,6 +173,7 @@ const Index = () => {
             Take our quick 5-minute assessment and receive personalized insights.
           </p>
           <Button 
+            type="button"
             size="lg" 
             onClick={handleStartAssessment}
             variant="secondary"
